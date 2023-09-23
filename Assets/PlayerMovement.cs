@@ -58,13 +58,14 @@ public class PlayerMovement : MonoBehaviour
             StartDash();
         }
 
+        Jump();
+
     }
 
     void FixedUpdate() {
         
         SetMovementVelocity();
 
-        Jump();
         if (isDashing) {
             Dash();
         } else {
@@ -76,16 +77,11 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        
+        if (momentumVelocity.magnitude > 0 && isGrounded && !isDashing && !IsInvoking("RecoverDash")) {
+            momentumVelocity = new Vector3(0, 0, 0);
+        }
 
-        // if (maxSpeed > normalMaxSpeed && isGrounded && !isDashing) {
-        //     maxSpeed = normalMaxSpeed;
-        // }
-        // if (maxSpeed < normalMaxSpeed) {
-        //     maxSpeed = normalMaxSpeed;
-        // }
-
-        if (momentumVelocity.magnitude > 0 && isGrounded && !isDashing) {
+        if (momentumVelocity.magnitude < 0.01) {
             momentumVelocity = new Vector3(0, 0, 0);
         }
 
@@ -123,23 +119,15 @@ public class PlayerMovement : MonoBehaviour
 
         // When movement button is continuously held
         if (aHeld && !isDashing) {
-            // rb.velocity -= xzVelocity;
-            // rb.velocity += Vector3.RotateTowards(xzVelocity, -xzOrientation.right, 10f * Time.deltaTime, 0.0f);
             inputVelocity = Vector3.RotateTowards(inputVelocity, -xzOrientation.right, 10f * Time.deltaTime, 0f);
         }
         if (dHeld && !isDashing) {
-            // rb.velocity -= xzVelocity;
-            // rb.velocity += Vector3.RotateTowards(xzVelocity, xzOrientation.right, 10f * Time.deltaTime, 0.0f);
             inputVelocity = Vector3.RotateTowards(inputVelocity, xzOrientation.right, 10f * Time.deltaTime, 0f);
         }
         if (sHeld && !isDashing) {
-            // rb.velocity -= xzVelocity;
-            // rb.velocity += Vector3.RotateTowards(xzVelocity, -xzOrientation.forward, 10f * Time.deltaTime, 0.0f);
             inputVelocity = Vector3.RotateTowards(inputVelocity, -xzOrientation.forward, 10f * Time.deltaTime, 0f);
         }
         if (wHeld && !isDashing) {
-            // rb.velocity -= xzVelocity;
-            // rb.velocity += Vector3.RotateTowards(xzVelocity, xzOrientation.forward, 10f * Time.deltaTime, 0.0f);
             inputVelocity = Vector3.RotateTowards(inputVelocity, xzOrientation.forward, 10f * Time.deltaTime, 0f);
         }
 
@@ -173,14 +161,6 @@ public class PlayerMovement : MonoBehaviour
         Vector3 xzVelocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);   
         rb.velocity -= xzVelocity;
         rb.velocity += momentumVelocity + inputVelocity;
-
-           
-
-        // if (xzVelocity.magnitude > maxSpeed) {
-        //     Vector3 limitedVelocity = xzVelocity.normalized * maxSpeed;
-        //     rb.velocity = new Vector3(limitedVelocity.x, rb.velocity.y, limitedVelocity.z);
-        // }
-
         
     }
 
@@ -209,7 +189,6 @@ public class PlayerMovement : MonoBehaviour
             wReleased = true;
         }
     }
-
     void GetKeyPressed() {
         if (Input.GetKeyDown(KeyCode.A)) {
             aPressed = true;
@@ -246,13 +225,10 @@ public class PlayerMovement : MonoBehaviour
 
         Debug.Log(dashRotationX);
         if (dashRotationX > 12.5 && dashRotationX < 37.5 || isGrounded) {
-            //maxSpeed = dashSpeed;
-            momentumVelocity += dashDirection * dashSpeed;
-            // Debug.Log("Maintaining Speed");
+            Vector3 dashDirectionXZ = new Vector3(dashDirection.x, 0, dashDirection.z);
+            momentumVelocity += dashDirectionXZ * dashSpeed;
         } else {
-            //maxSpeed = normalMaxSpeed;
             rb.velocity = new Vector3 (rb.velocity.x, 0f, rb.velocity.z);
-            // Debug.Log("Not Maintaining Speed");
         }
     }
 
